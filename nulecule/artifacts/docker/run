@@ -1,0 +1,7 @@
+set -x
+if [ ! -d $hostdir ] ; then
+    sudo mkdir -p $hostdir
+    sudo chown -R $uid $hostdir
+    sudo chcon -Rt svirt_sandbox_file_t $hostdir
+fi
+docker run -d -p 9200:9200 -p 9300:9300 -u $uid -v $hostdir:$containerdir bitscout/elasticsearch:latest

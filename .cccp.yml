@@ -1,0 +1,13 @@
+#place this file in your nulecule dir and call it .cccp.yml
+job-id: bitscout-elasticsearch-job
+
+#the following are optional, can be left blank
+#defaults, where applicable are filled in
+nulecule-file   : Nulecule
+notify          :
+skip            : False
+test            : False
+test-script     :
+docker-index    : True
+custom-delivery : False
+local-delivery  : True

@@ -1,4 +1,6 @@
 #!/bin/sh
+set -o errexit
+
 HOSTDIR=${HOSTDIR:-/var/lib/bitscout}
 ESHOSTDIR=${ESHOSTDIR:-$HOSTDIR/elasticsearch}
 if [ ! -d $ESHOSTDIR ] ; then

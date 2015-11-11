@@ -1,0 +1,7 @@
+Projects:
+  - id          : bitscout-elasticsearch
+    app-id      : bitscout/elasticsearch-app
+    job-id      : bitscout-elasticsearch-job
+    git-url     : file:///home/rmeggins/bitscout/docker-elasticsearch
+    git-path    : .cccp.yml
+    git-branch  : master

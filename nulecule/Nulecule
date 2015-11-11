@@ -1,0 +1,30 @@
+---
+specversion: 0.0.2
+id: bitscout-elasticsearch-app
+
+metadata:
+  name: Elasticsearch for BitScout
+  appversion: 0.0.1
+  description: BitScout implementation of Elasticsearch
+
+graph:
+  - name: bitscout-elasticsearch
+    params:
+      - name: uid
+        description: Numeric user id to use to run elasticsearch
+        default: 1000
+      - name: hostdir
+        description: Host directory of persistent volume
+        default: /var/lib/bitscout/elasticsearch
+      - name: containerdir
+        description: Container directory of persistent volume
+        default: /elasticsearch
+    artifacts:
+      docker:
+        - file://artifacts/docker/run
+
+requirements: 
+  - persistentVolume: 
+      accessMode: ReadWrite
+      name: var-lib-bitscout-elasticsearch
+      size: 4
