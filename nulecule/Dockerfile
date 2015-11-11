@@ -4,6 +4,5 @@ MAINTAINER The BitScout Community <community@TBA>
 LABEL io.projectatomic.nulecule.providers="docker" \
       io.projectatomic.nulecule.specversion="0.0.2"
 
-# nulecule stuff
 ADD /Nulecule /Dockerfile /application-entity/
 ADD /artifacts /application-entity/artifacts

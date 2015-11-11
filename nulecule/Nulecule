@@ -10,6 +10,12 @@ metadata:
 graph:
   - name: bitscout-elasticsearch
     params:
+      - name: appname
+        description: Name given to docker run --name
+        default: bitscout-elasticsearch
+      - name: image
+        description: Image to run
+        default: bitscout/elasticsearch:latest
       - name: uid
         description: Numeric user id to use to run elasticsearch
         default: 1000
