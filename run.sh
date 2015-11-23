@@ -31,5 +31,11 @@ else
 	exit 1
 fi
 
+add_index_template() {
+    sleep 5
+    curl -v -X PUT -d@/usr/share/elasticsearch/config/com.redhat.bitscout-template.json http://localhost:9200/_template/bitscout
+}
+
+add_index_template &
 
 /usr/share/elasticsearch/bin/elasticsearch

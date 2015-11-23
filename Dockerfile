@@ -24,6 +24,7 @@ LABEL io.k8s.description="Elasticsearch container for allowing indexing and sear
 ADD elasticsearch.repo /etc/yum.repos.d/elasticsearch.repo
 ADD run.sh install.sh ${HOME}/
 ADD *.yml /usr/share/elasticsearch/config/
+ADD com.redhat.bitscout-template.json /usr/share/elasticsearch/config/
 RUN ${HOME}/install.sh
 
 WORKDIR ${HOME}
