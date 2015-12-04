@@ -3,6 +3,16 @@
 set -x
 set -e
 
+PORT=9200
+HOST=localhost
+LOG_FILE=elasticsearch_connect_log.txt
+RETRY_COUNT=30      # how many times
+RETRY_INTERVAL=1    # how often (in sec)
+
+retry=${RETRY_COUNT}
+max_time=$(( RETRY_COUNT * RETRY_INTERVAL ))    # should be integer
+timeouted=false
+
 if [ -z "$CLUSTER_NAME" ] ; then
     echo CLUSTER_NAME not set - using bitscout
     export CLUSTER_NAME=bitscout
@@ -31,9 +41,37 @@ else
 	exit 1
 fi
 
+# Wait for Elasticsearch port to be opened. Fail on timeout or if response from Elasticsearch is unexpected.
+wait_for_port_open() {
+    rm -f ${LOG_FILE}
+    echo -n "Checking if Elasticsearch is ready on ${HOST}:${PORT} "
+    while ! curl -s --max-time ${max_time} -o ${LOG_FILE} ${HOST}:${PORT} && [ ${timeouted} == false ]
+    do
+        echo -n "."
+        sleep ${RETRY_INTERVAL}
+        (( retry -= 1 ))
+        if (( retry == 0 )) ; then
+            timeouted=true
+        fi
+    done
+
+    # Test for response code 200 in Elasticsearch output. This can be sensitive to Elasticsearch version.
+    if [ -f ${LOG_FILE} ] && grep -q "200" ${LOG_FILE} ; then
+        echo "- connection successful"
+    else
+        if [ ${timeouted} == true ] ; then
+            echo -n "[timeout] "
+        fi
+        echo "failed"
+        exit 1
+    fi
+}
+
 add_index_template() {
-    sleep 5
-    curl -v -X PUT -d@/usr/share/elasticsearch/config/com.redhat.bitscout-template.json http://localhost:9200/_template/bitscout
+    wait_for_port_open
+    # Make sure cluster is stable enough for index templates being pushed in.
+    curl -v -X GET "http://${HOST}:${PORT}/_cluster/health?wait_for_status=yellow&timeout=${max_time}s"
+    curl -v -X PUT -d@/usr/share/elasticsearch/config/com.redhat.bitscout-template.json http://${HOST}:${PORT}/_template/bitscout
 }
 
 add_index_template &
