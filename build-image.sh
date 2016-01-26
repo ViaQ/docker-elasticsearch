@@ -2,7 +2,7 @@
 
 set -x
 set -o errexit
-prefix=${PREFIX:-${1:-bitscout/}}
+prefix=${PREFIX:-${1:-viaq/}}
 version=${VERSION:-${2:-latest}}
 docker build -t "${prefix}elasticsearch:${version}" .
 

@@ -14,8 +14,8 @@ max_time=$(( RETRY_COUNT * RETRY_INTERVAL ))    # should be integer
 timeouted=false
 
 if [ -z "$CLUSTER_NAME" ] ; then
-    echo CLUSTER_NAME not set - using bitscout
-    export CLUSTER_NAME=bitscout
+    echo CLUSTER_NAME not set - using viaq
+    export CLUSTER_NAME=viaq
 fi
 mkdir -p /elasticsearch/$CLUSTER_NAME
 if [ -n "$USE_SEARCHGUARD" ] ; then
@@ -71,7 +71,7 @@ add_index_template() {
     wait_for_port_open
     # Make sure cluster is stable enough for index templates being pushed in.
     curl -v -X GET "http://${HOST}:${PORT}/_cluster/health?wait_for_status=yellow&timeout=${max_time}s"
-    curl -v -X PUT -d@/usr/share/elasticsearch/config/com.redhat.bitscout-template.json http://${HOST}:${PORT}/_template/bitscout
+    curl -v -X PUT -d@/usr/share/elasticsearch/config/com.redhat.viaq-template.json http://${HOST}:${PORT}/_template/viaq
 }
 
 add_index_template &

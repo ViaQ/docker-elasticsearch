@@ -21,7 +21,7 @@ io.fabric8.elasticsearch.authentication.users: ["system.logging.kibana", "system
 
 cloud:
   k8s:
-    servicedns: es-bitscout-cluster
+    servicedns: es-viaq-cluster
 
 discovery:
   type: io.fabric8.elasticsearch.discovery.k8s.K8sDiscoveryModule
