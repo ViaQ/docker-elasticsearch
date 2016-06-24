@@ -45,7 +45,7 @@ fi
 wait_for_port_open() {
     rm -f ${LOG_FILE}
     echo -n "Checking if Elasticsearch is ready on ${HOST}:${PORT} "
-    while ! curl -s --max-time ${max_time} -o ${LOG_FILE} ${HOST}:${PORT} && [ ${timeouted} == false ]
+    while ! curl -i -s --max-time ${max_time} -o ${LOG_FILE} ${HOST}:${PORT} && [ ${timeouted} == false ]
     do
         echo -n "."
         sleep ${RETRY_INTERVAL}
@@ -56,12 +56,14 @@ wait_for_port_open() {
     done
 
     # Test for response code 200 in Elasticsearch output. This can be sensitive to Elasticsearch version.
-    if [ -f ${LOG_FILE} ] && grep -q "200" ${LOG_FILE} ; then
+    if [ -f ${LOG_FILE} ] && grep -q "HTTP/1.1 200 OK" ${LOG_FILE} ; then
         echo "- connection successful"
+        cat ${LOG_FILE}
     else
         if [ ${timeouted} == true ] ; then
             echo -n "[timeout] "
         fi
+        cat ${LOG_FILE}
         echo "failed"
         exit 1
     fi

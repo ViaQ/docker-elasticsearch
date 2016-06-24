@@ -3,8 +3,11 @@
 set -ex
 
 rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
-yum install -y --setopt=tsflags=nodocs \
-  java-1.8.0-openjdk \
+case ${ES_VER:-1.5.2} in
+    1.*) DISABLEREPO="--disablerepo elasticsearch-2.x" ;;
+esac
+yum install -y --setopt=tsflags=nodocs $DISABLEREPO \
+  java-1.8.0-openjdk-headless \
   elasticsearch
 yum clean all
 
