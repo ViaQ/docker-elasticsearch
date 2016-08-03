@@ -7,7 +7,7 @@ USER 0
 
 ENV HOME=/opt/app-root/src \
   JAVA_VER=1.8.0 \
-  ES_VER=1.5.2 \
+  ES_VER=2.3.4 \
   ES_CONF=/usr/share/elasticsearch/config/elasticsearch.yml \
   INSTANCE_RAM=8G \
   NODE_QUORUM=1 \
