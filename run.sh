@@ -3,8 +3,7 @@
 set -x
 set -e
 
-PORT=9200
-HOST=localhost
+ES_REST_BASEURL=http://localhost:9200
 LOG_FILE=elasticsearch_connect_log.txt
 RETRY_COUNT=30      # how many times
 RETRY_INTERVAL=1    # how often (in sec)
@@ -44,8 +43,8 @@ fi
 # Wait for Elasticsearch port to be opened. Fail on timeout or if response from Elasticsearch is unexpected.
 wait_for_port_open() {
     rm -f ${LOG_FILE}
-    echo -n "Checking if Elasticsearch is ready on ${HOST}:${PORT} "
-    while ! curl -i -s --max-time ${max_time} -o ${LOG_FILE} ${HOST}:${PORT} && [ ${timeouted} == false ]
+    echo -n "Checking if Elasticsearch is ready on ${ES_REST_BASEURL}"
+    while ! curl -i -s --max-time ${max_time} -o ${LOG_FILE} ${ES_REST_BASEURL} && [ ${timeouted} == false ]
     do
         echo -n "."
         sleep ${RETRY_INTERVAL}
@@ -69,13 +68,28 @@ wait_for_port_open() {
     fi
 }
 
-add_index_template() {
+verify_or_add_index_templates() {
     wait_for_port_open
-    # Make sure cluster is stable enough for index templates being pushed in.
-    curl -v -X GET "http://${HOST}:${PORT}/_cluster/health?wait_for_status=yellow&timeout=${max_time}s"
-    curl -v -X PUT -d@/usr/share/elasticsearch/config/com.redhat.viaq-template.json http://${HOST}:${PORT}/_template/viaq
+    # Try to wait for cluster become more stable before index template being pushed in.
+    # Give up on timeout and continue...
+    curl -v -X GET "${ES_REST_BASEURL}/_cluster/health?wait_for_status=yellow&timeout=${max_time}s"
+
+    for template_file in /usr/share/elasticsearch/config/index_templates/*.json
+    do
+        template=`basename $template_file`
+        # Check if index template already exists
+        response_code=$(curl -v -X HEAD \
+            -w '%{response_code}' \
+            ${ES_REST_BASEURL}/_template/$template)
+        if [ $response_code == "200" ]; then
+            echo "Index template '$template' already present in ES cluster"
+        else
+            echo "Create index template '$template'"
+            curl -v -X PUT -d@$template_file ${ES_REST_BASEURL}/_template/$template
+        fi
+    done
 }
 
-add_index_template &
+verify_or_add_index_templates &
 
-/usr/share/elasticsearch/bin/elasticsearch
+exec /usr/share/elasticsearch/bin/elasticsearch
