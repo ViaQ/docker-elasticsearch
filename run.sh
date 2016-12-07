@@ -1,24 +1,28 @@
 #!/bin/bash
 
-set -x
-set -e
+set -euxo pipefail
 
-ES_REST_BASEURL=http://localhost:9200
+HOST=${HOST:-localhost}
+PORT=${PORT:-9200}
+ES_REST_BASEURL=http://${HOST}:$PORT
 LOG_FILE=elasticsearch_connect_log.txt
 RETRY_COUNT=30      # how many times
 RETRY_INTERVAL=1    # how often (in sec)
 
-retry=${RETRY_COUNT}
+retry=$RETRY_COUNT
 max_time=$(( RETRY_COUNT * RETRY_INTERVAL ))    # should be integer
 timeouted=false
 
-if [ -z "$CLUSTER_NAME" ] ; then
+if [ -z "${CLUSTER_NAME:-}" ] ; then
     echo CLUSTER_NAME not set - using viaq
     export CLUSTER_NAME=viaq
 fi
 mkdir -p /elasticsearch/$CLUSTER_NAME
-if [ -n "$USE_SEARCHGUARD" ] ; then
-    ln -s /etc/elasticsearch/keys/searchguard.key /elasticsearch/$CLUSTER_NAME/searchguard_node_key.key
+
+ADMIN_AUTH=
+if [ "${USE_SEARCHGUARD:-}" = true ] ; then
+    ES_REST_BASEURL=https://${HOST}:$PORT
+    ADMIN_AUTH="-u kirk:kirk -k"
 fi
 
 # the amount of RAM allocated should be half of available instance RAM.
@@ -44,7 +48,7 @@ fi
 wait_for_port_open() {
     rm -f ${LOG_FILE}
     echo -n "Checking if Elasticsearch is ready on ${ES_REST_BASEURL}"
-    while ! curl -i -s --max-time ${max_time} -o ${LOG_FILE} ${ES_REST_BASEURL} && [ ${timeouted} == false ]
+    while ! curl -i -s --max-time ${max_time} -o ${LOG_FILE} $ADMIN_AUTH ${ES_REST_BASEURL} && [ ${timeouted} == false ]
     do
         echo -n "."
         sleep ${RETRY_INTERVAL}
@@ -72,24 +76,43 @@ verify_or_add_index_templates() {
     wait_for_port_open
     # Try to wait for cluster become more stable before index template being pushed in.
     # Give up on timeout and continue...
-    curl -v -X GET "${ES_REST_BASEURL}/_cluster/health?wait_for_status=yellow&timeout=${max_time}s"
+    curl -v -X GET $ADMIN_AUTH "${ES_REST_BASEURL}/_cluster/health?wait_for_status=yellow&timeout=${max_time}s"
 
-    for template_file in /usr/share/elasticsearch/config/index_templates/*.json
+    for template_file in $ES_CONF/index_templates/*.json
     do
         template=`basename $template_file`
         # Check if index template already exists
         response_code=$(curl -v -X HEAD \
-            -w '%{response_code}' \
+            -w '%{response_code}' $ADMIN_AUTH \
             ${ES_REST_BASEURL}/_template/$template)
         if [ $response_code == "200" ]; then
             echo "Index template '$template' already present in ES cluster"
         else
             echo "Create index template '$template'"
-            curl -v -X PUT -d@$template_file ${ES_REST_BASEURL}/_template/$template
+            curl -v -X PUT -d@$template_file $ADMIN_AUTH ${ES_REST_BASEURL}/_template/$template
         fi
     done
 }
 
-verify_or_add_index_templates &
+init_sg() {
+    sleep 15
+    cd $ES_HOME
+    bash plugins/search-guard-2/tools/sgadmin.sh \
+        -cd plugins/search-guard-2/sgconfig/ \
+        -ks plugins/search-guard-2/sgconfig/node-0-keystore.jks \
+        -ts plugins/search-guard-2/sgconfig/truststore.jks \
+        -i .searchguard \
+        -nhnv
+}
 
-exec /usr/share/elasticsearch/bin/elasticsearch
+do_initial_tasks() {
+    if [ "${USE_SEARCHGUARD:-}" = true ] ; then
+        init_sg
+    fi
+    wait_for_port_open
+    verify_or_add_index_templates
+}
+
+do_initial_tasks &
+
+exec $ES_HOME/bin/elasticsearch --security.manager.enabled=false --path.conf=$ES_CONF/

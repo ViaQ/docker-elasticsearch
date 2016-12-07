@@ -7,8 +7,9 @@ USER 0
 
 ENV HOME=/opt/app-root/src \
   JAVA_VER=1.8.0 \
-  ES_VER=2.3.4 \
-  ES_CONF=/usr/share/elasticsearch/config/elasticsearch.yml \
+  ES_VER=1.5.2 \
+  ES_HOME=/usr/share/elasticsearch \
+  ES_CONF=${ES_HOME}/config/elasticsearch.yml \
   INSTANCE_RAM=8G \
   NODE_QUORUM=1 \
   RECOVER_AFTER_NODES=1 \
@@ -29,4 +30,4 @@ RUN ${HOME}/install.sh
 
 WORKDIR ${HOME}
 USER 1000
-CMD ["sh", "/opt/app-root/src/run.sh"]
+CMD ["sh", "${HOME}/run.sh"]
