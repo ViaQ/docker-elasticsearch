@@ -6,11 +6,11 @@ HOST=${HOST:-localhost}
 PORT=${PORT:-9200}
 ES_REST_BASEURL=http://${HOST}:$PORT
 LOG_FILE=elasticsearch_connect_log.txt
-RETRY_COUNT=30      # how many times
-RETRY_INTERVAL=1    # how often (in sec)
+RETRY_COUNT=300		# how many times
+RETRY_INTERVAL=1	# how often (in sec)
 
 retry=$RETRY_COUNT
-max_time=$(( RETRY_COUNT * RETRY_INTERVAL ))    # should be integer
+max_time=$(( RETRY_COUNT * RETRY_INTERVAL ))	# should be integer
 timeouted=false
 
 if [ -z "${CLUSTER_NAME:-}" ] ; then
@@ -40,8 +40,8 @@ if [[ "${INSTANCE_RAM}" =~ $regex ]]; then
 	fi
 	ES_JAVA_OPTS="${ES_JAVA_OPTS} -Xms256M -Xmx$(($num/2))m"
 else
-	echo "INSTANCE_RAM env var is invalid: ${INSTANCE_RAM}"
-	exit 1
+    echo "INSTANCE_RAM env var is invalid: ${INSTANCE_RAM:-}"
+    exit 1
 fi
 
 # Wait for Elasticsearch port to be opened. Fail on timeout or if response from Elasticsearch is unexpected.

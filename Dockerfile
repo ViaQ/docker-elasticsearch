@@ -9,11 +9,11 @@ ARG USE_SEARCHGUARD=false
 
 ENV HOME=/opt/app-root/src \
   JAVA_VER=1.8.0 \
-  ES_VER=2.4.2 \
-  SG_VER=2.4.2.8 \
-  SG_SSL_VER=2.4.2.17 \
-  ES_CLOUD_K8S_VER=2.4.1 \
-  OSE_ES_VER=2.4.1.0 \
+  ES_VER=2.4.4 \
+  SG_VER=2.4.4.10 \
+  SG_SSL_VER=2.4.4.19 \
+  ES_CLOUD_K8S_VER=2.4.4 \
+  OSE_ES_VER=2.4.4.0 \
   ES_HOME=/usr/share/elasticsearch \
   ES_CONF=/usr/share/elasticsearch/config \
   ES_JAVA_OPTS="-Dmapper.allow_dots_in_name=true" \
