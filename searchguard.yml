@@ -1,0 +1,29 @@
+searchguard:
+  authcz.admin_dn:
+#  - CN=system.admin,OU=OpenShift,O=Logging
+#  - cn=admin,ou=Test,ou=ou,dc=company,dc=com
+#  - cn=smith,ou=IT,ou=IT,dc=company,dc=com
+#kirk is admin
+  - CN=kirk, OU=client, O=client, L=Test, C=DE
+  config_index_name: ".searchguard"
+  ssl:
+    transport:
+      enabled: true
+      enforce_hostname_verification: false
+      keystore_type: JKS
+      keystore_filepath: transport-node-0-keystore.jks
+      keystore_password: changeit
+      truststore_type: JKS
+      truststore_filepath: truststore.jks
+      truststore_password: changeit
+      enable_openssl_if_available: false
+    http:
+      enabled: true
+      keystore_type: JKS
+      keystore_filepath: http-node-0-keystore.jks
+      keystore_password: changeit
+      clientauth_mode: OPTIONAL
+      truststore_type: JKS
+      truststore_filepath: truststore.jks
+      truststore_password: changeit
+      enable_openssl_if_available: false
